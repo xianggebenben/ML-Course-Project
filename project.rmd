@@ -1,0 +1,63 @@
+---
+title: "Course Project for Practical Machine Learning"
+author: ""
+date: 
+output: html_document
+---
+##Background
+Using devices it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, I focus on predicting perform barbell lifts correctly and incorrectly in 5 different ways using data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har.
+
+
+##Dataset
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har.
+
+##Prerocessing
+Firstly, I partition the training dataset into two parts:60% for the training set and the remaining 40% for cross-validation set. I count the missing value number for each column and get the plot as follows:
+```{r echo=FALSE}
+load(file = "data/result.RData")
+plot(x=1:length(naSum),y=naSum,xlab="Column Index",ylab ="Missing Value Number")
+```
+
+You can see from this plot that most columns are filled with missing values, so these variables should be deleted. Alternately, I tried to impute these varaibles with median value or mean value. But the training accuracy was very low. For lack of enough data, the imputation triggered some bias into  the dataset. It is apparent that the first five variables have nothing to do with the response. They should be also precluded.For the remaining integer and numeric vaiables, I normalize them so that they look more like Gaussian distribution. The log transformation is not appropriate for this dataset because many variables contain negative values. I also tried PCA transformation to reduce varaible number. However, the reduced dimensionality didn't improve model performance significantly, and I had to face the difficult data interpretation problem,so I gave it up at last.As a result, I include 54 variables,including 53 variables and a response.
+
+##Explorary Data Analysis
+Firstly I sort the importance of variables in a descending manner:
+```{r,echo=FALSE}
+FS
+```
+I make two explorary boxplots between the varaible pitch_forearm,roll_dumbbell and classe respectively, the differences between five classes are evident.
+
+```{r,echo=FALSE}
+ plot(as.factor(tr$classe),tr$pitch_forearm,xlab ="Pitch_forearm",ylab = "Classe")
+ plot(as.factor(tr$classe),tr$roll_dumbbell,xlab ="Roll_dumbbell",ylab = "Classe")
+```
+
+
+##Machine Learning Algorithm
+I chose some learning algorithms to train the dataset. The linear algorithms seem uneffectively since this is a multiple classificiation problem. Therefore, there exists no possible linear relationship between response and predictors.Quadratic discriminant analysis is a computationally efficient algorithm to deal with nonlinear problems, and a forward selection method is introduced to select the optimal subset. The  relation between feature number and model accuracy could be seen in the following figure:
+```{r,echo=FALSE}
+plot(x=2:(length(acc)+1),y=acc,xlab ="Feature Number",ylab ="Accuracy")
+```
+
+
+It is not difficult to find that nearly all variables are needed for prediction. The training result is here:
+```{r,echo=FALSE}
+comModelFit
+```
+This in-sample error gives an upper boundary of the out of sample error. But I think this model generalizes well in the cross validation set because I choose the training samples randomly.
+The cross validation test result is listed:
+```{r,echo=FALSE}
+cv
+```
+The model accuracy is about 90%, and specificity and sensitivity look great.  In fact, it predicts all twenty testing samples correctly, this fact validates model effectiveness further.
+
+##Conclusion
+In this report,I build a machine learning algoritm to predict perform barbell lifts correctly and incorrectly in 5 different ways using data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants.I exclude many uncessary variables and normalize the remaining integer and numeric predicators.Then I choose the optimal subset by forward selection combined with quadratic discriminant analysis. The result confirms that nearly all variables are necessary. Finally,quadratic discriminant analysis works great among  the training, cross-validation set and testing samples.
